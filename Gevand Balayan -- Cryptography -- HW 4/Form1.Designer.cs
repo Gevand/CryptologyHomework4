@@ -33,6 +33,8 @@
             this.radioButton1 = new System.Windows.Forms.RadioButton();
             this.radioButton2 = new System.Windows.Forms.RadioButton();
             this.label1 = new System.Windows.Forms.Label();
+            this.txtKey = new System.Windows.Forms.TextBox();
+            this.label2 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // btnStart
@@ -43,6 +45,7 @@
             this.btnStart.TabIndex = 0;
             this.btnStart.Text = "Start";
             this.btnStart.UseVisualStyleBackColor = true;
+            this.btnStart.Click += new System.EventHandler(this.btnStart_Click);
             // 
             // textBox1
             // 
@@ -83,11 +86,29 @@
             this.label1.TabIndex = 4;
             this.label1.Text = "Output here:";
             // 
+            // txtKey
+            // 
+            this.txtKey.Location = new System.Drawing.Point(12, 136);
+            this.txtKey.Name = "txtKey";
+            this.txtKey.Size = new System.Drawing.Size(147, 20);
+            this.txtKey.TabIndex = 5;
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(12, 120);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(64, 13);
+            this.label2.TabIndex = 6;
+            this.label2.Text = "16 Byte Key";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1450, 631);
+            this.Controls.Add(this.label2);
+            this.Controls.Add(this.txtKey);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.radioButton2);
             this.Controls.Add(this.radioButton1);
@@ -107,6 +128,8 @@
         private System.Windows.Forms.RadioButton radioButton1;
         private System.Windows.Forms.RadioButton radioButton2;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.TextBox txtKey;
+        private System.Windows.Forms.Label label2;
     }
 }
 
