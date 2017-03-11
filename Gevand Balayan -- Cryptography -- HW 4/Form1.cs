@@ -13,21 +13,96 @@ namespace Gevand_Balayan____Cryptography____HW_4
     public partial class Form1 : Form
     {
         Byte[] key = new Byte[16];
+        List<Byte[]> ExpandedKeys;
         Byte[,] SBox = new Byte[16, 16];
         Byte[,] ISBox = new Byte[16, 16];
         Byte[,] RCon = new Byte[11, 4];
         public Form1()
         {
             InitializeComponent();
+            GenerateSBox();
             GenerateRandomKey();
             txtKey.Text = System.Text.Encoding.UTF8.GetString(key);
         }
 
         private void btnStart_Click(object sender, EventArgs e)
         {
+            ExpandedKeys = ExpandKey(key);
+
 
         }
 
+        private List<Byte[]> ExpandKey(Byte[] key)
+        {
+
+            List<Byte[]> returnedList = new List<byte[]>();
+            returnedList.Add(key);
+
+            for (int i = 4; i < 44; i++)
+            {
+                if (i % 4 == 0)
+                {
+                    Byte[] tempKey = new Byte[16];
+                    Byte[] lastKey = returnedList[returnedList.Count - 1];
+                    Byte[] lastWord = lastKey.Skip(12).Take(4).ToArray();
+                    Byte[] tempWord = SubWord(RotateWord(lastWord));
+                    tempWord[0] = (byte)((int)tempWord[0] ^ (int)RCon[i / 4, 0]);
+                    for (int z = 0; z < 4; z++)
+                    {
+                        tempWord[z] = (byte)((int)tempWord[z] ^ (int)lastWord[z]);
+                        tempKey[z] = tempWord[z];
+                    }
+                    returnedList.Add(tempKey);
+                }
+                else
+                {
+                    //get last key and its 4th word
+                    Byte[] lastKey = returnedList[returnedList.Count - 2];
+                    Byte[] lastSpecialWord = lastKey.Skip(12).Take(4).ToArray();
+                    //get current key's last word
+                    Byte[] currentKey = returnedList[returnedList.Count - 1];
+                    Byte[] lastWord = currentKey.Skip((i % 4 - 1) * 4).Take(4).ToArray();
+                    //or them together
+                    Byte[] tempWord = new Byte[4];
+                    for (int z = 0; z < 4; z++)
+                    {
+                        tempWord[z] = (byte)((int)lastWord[z] ^ (int)lastSpecialWord[z]);
+                    }
+                    for (int j = (i % 4) * 4; j < (i % 4 + 1) * 4; j++)
+                    {
+                        currentKey[j] = tempWord[j % 4];
+                    }
+                    returnedList[returnedList.Count - 1] = currentKey;
+                }
+            }
+            return returnedList;
+        }
+
+        private Byte[] RotateWord(Byte[] input)
+        {
+            var temp = new Byte[input.Length];
+            //shift every byte by 1 to the left [1] becomes [0], [2] becomes [1], etc
+            for (int i = 0; i < input.Length - 1; i++)
+            {
+                temp[i] = input[i + 1];
+            }
+            //last byte is now what the first byte used to be
+            temp[input.Length - 1] = input[0];
+            return temp;
+        }
+        private Byte[] SubWord(Byte[] input)
+        {
+            var temp = new Byte[input.Length];
+            for (int i = 0; i < input.Length; i++)
+            {
+                //get the right nibble with a mask
+                int col = (byte)input[i] & 0x0F;
+                //get the left nibble with a mask
+                int row = (byte)((input[i] & 0xF0) >> 4);
+                temp[i] = this.SBox[row, col];
+            }
+            return temp;
+        }
         private void GenerateRandomKey()
         {
             var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -40,7 +115,7 @@ namespace Gevand_Balayan____Cryptography____HW_4
         private void GenerateSBox()
         {
             this.SBox = new byte[16, 16] {  
-              /* 0     1     2     3     4     5     6     7     8     9     a     b     c     d     e     f */
+            /* 0     1     2     3     4     5     6     7     8     9     a     b     c     d     e     f */
     /*0*/  {0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76},
     /*1*/  {0xca, 0x82, 0xc9, 0x7d, 0xfa, 0x59, 0x47, 0xf0, 0xad, 0xd4, 0xa2, 0xaf, 0x9c, 0xa4, 0x72, 0xc0},
     /*2*/  {0xb7, 0xfd, 0x93, 0x26, 0x36, 0x3f, 0xf7, 0xcc, 0x34, 0xa5, 0xe5, 0xf1, 0x71, 0xd8, 0x31, 0x15},
@@ -58,8 +133,8 @@ namespace Gevand_Balayan____Cryptography____HW_4
     /*e*/  {0xe1, 0xf8, 0x98, 0x11, 0x69, 0xd9, 0x8e, 0x94, 0x9b, 0x1e, 0x87, 0xe9, 0xce, 0x55, 0x28, 0xdf},
     /*f*/  {0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16} };
 
-            this.ISBox = new byte[16, 16] {  // populate the iSbox matrix
-    /* 0     1     2     3     4     5     6     7     8     9     a     b     c     d     e     f */
+            this.ISBox = new byte[16, 16] {  
+            /* 0     1     2     3     4     5     6     7     8     9     a     b     c     d     e     f */
     /*0*/  {0x52, 0x09, 0x6a, 0xd5, 0x30, 0x36, 0xa5, 0x38, 0xbf, 0x40, 0xa3, 0x9e, 0x81, 0xf3, 0xd7, 0xfb},
     /*1*/  {0x7c, 0xe3, 0x39, 0x82, 0x9b, 0x2f, 0xff, 0x87, 0x34, 0x8e, 0x43, 0x44, 0xc4, 0xde, 0xe9, 0xcb},
     /*2*/  {0x54, 0x7b, 0x94, 0x32, 0xa6, 0xc2, 0x23, 0x3d, 0xee, 0x4c, 0x95, 0x0b, 0x42, 0xfa, 0xc3, 0x4e},

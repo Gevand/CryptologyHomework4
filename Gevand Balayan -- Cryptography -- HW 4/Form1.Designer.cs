@@ -88,6 +88,7 @@
             // 
             // txtKey
             // 
+            this.txtKey.Enabled = false;
             this.txtKey.Location = new System.Drawing.Point(12, 136);
             this.txtKey.Name = "txtKey";
             this.txtKey.Size = new System.Drawing.Size(147, 20);
