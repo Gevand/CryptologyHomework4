@@ -29,10 +29,10 @@
         private void InitializeComponent()
         {
             this.btnStart = new System.Windows.Forms.Button();
-            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.txtInput = new System.Windows.Forms.TextBox();
             this.radioButton1 = new System.Windows.Forms.RadioButton();
             this.radioButton2 = new System.Windows.Forms.RadioButton();
-            this.label1 = new System.Windows.Forms.Label();
+            this.lblOutput = new System.Windows.Forms.Label();
             this.txtKey = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
             this.SuspendLayout();
@@ -47,13 +47,14 @@
             this.btnStart.UseVisualStyleBackColor = true;
             this.btnStart.Click += new System.EventHandler(this.btnStart_Click);
             // 
-            // textBox1
+            // txtInput
             // 
-            this.textBox1.Location = new System.Drawing.Point(187, 12);
-            this.textBox1.Multiline = true;
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(1251, 340);
-            this.textBox1.TabIndex = 1;
+            this.txtInput.Location = new System.Drawing.Point(187, 12);
+            this.txtInput.Multiline = true;
+            this.txtInput.Name = "txtInput";
+            this.txtInput.Size = new System.Drawing.Size(1251, 340);
+            this.txtInput.TabIndex = 1;
+            this.txtInput.Text = "Hello my name is Gevand. I woud like to send you a secret message!";
             // 
             // radioButton1
             // 
@@ -77,14 +78,14 @@
             this.radioButton2.Text = "Decrypt";
             this.radioButton2.UseVisualStyleBackColor = true;
             // 
-            // label1
+            // lblOutput
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(184, 367);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(66, 13);
-            this.label1.TabIndex = 4;
-            this.label1.Text = "Output here:";
+            this.lblOutput.AutoSize = true;
+            this.lblOutput.Location = new System.Drawing.Point(184, 367);
+            this.lblOutput.Name = "lblOutput";
+            this.lblOutput.Size = new System.Drawing.Size(66, 13);
+            this.lblOutput.TabIndex = 4;
+            this.lblOutput.Text = "Output here:";
             // 
             // txtKey
             // 
@@ -110,10 +111,10 @@
             this.ClientSize = new System.Drawing.Size(1450, 631);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.txtKey);
-            this.Controls.Add(this.label1);
+            this.Controls.Add(this.lblOutput);
             this.Controls.Add(this.radioButton2);
             this.Controls.Add(this.radioButton1);
-            this.Controls.Add(this.textBox1);
+            this.Controls.Add(this.txtInput);
             this.Controls.Add(this.btnStart);
             this.Name = "Form1";
             this.Text = "Gevand Balayan -- Homework 2";
@@ -125,10 +126,10 @@
         #endregion
 
         private System.Windows.Forms.Button btnStart;
-        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.TextBox txtInput;
         private System.Windows.Forms.RadioButton radioButton1;
         private System.Windows.Forms.RadioButton radioButton2;
-        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label lblOutput;
         private System.Windows.Forms.TextBox txtKey;
         private System.Windows.Forms.Label label2;
     }

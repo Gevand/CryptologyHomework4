@@ -28,10 +28,72 @@ namespace Gevand_Balayan____Cryptography____HW_4
         private void btnStart_Click(object sender, EventArgs e)
         {
             ExpandedKeys = ExpandKey(key);
-
-
+            if (txtInput.Text.Length == 0)
+            {
+                MessageBox.Show("Please enter an input in the text box");
+                return;
+            }
+            lblOutput.Text = GenerateCypher(txtInput.Text);
         }
+        private string GenerateCypher(string input)
+        {
+            string returnString = "";
+            //convert input to bytes
+            Byte[] inputAsBytes = Encoding.ASCII.GetBytes(input);
+            //split it into size 16 arrays
+            var chunks = Split<Byte>(inputAsBytes, 16);
+            foreach (var chunk in chunks)
+            {
+                Byte[] temp = chunk.ToArray();
+                //add 0s to the end of the array if its not 16
+                while (temp.Length != 16)
+                {
+                    var list = temp.ToList();
+                    list.Add(0);
+                    temp = list.ToArray();
+                }
+                for (int step = 0; step <= 10; step++)
+                {
+                    Byte[] currentKey = ExpandedKeys[step];
+                    for (int i = 0; i < temp.Length; i++)
+                    {
+                        //XOR with the chunk of data with the current key
+                        temp[i] = (byte)((int)temp[i] ^ (int)currentKey[i]);
+                    }
+                    //Sub with the S-Box
+                    temp = SubWord(temp);
+                    Byte[,] matrix = ShiftRow(temp);
 
+
+                }
+            }
+            return returnString;
+        }
+        private Byte[,] ShiftRow(Byte[] input)
+        {
+            Byte[,] returnedByte = new Byte[4, 4];
+            Byte[,] temp = new Byte[4, 4];
+            //turn flat array into 2d one
+            for (int i = 0; i < 4; i++)
+            {
+                for (int j = 0; j < 4; j++)
+                {
+                    temp[i, j] = input[i * 4 + j];
+                }
+            }
+            //copy the first row. it stays as is
+            for (int i = 0; i < 4; i++)
+                returnedByte[0, i] = input[i];
+            //rotate each word to the left
+            for (int i = 1; i < 4; i++)
+            {
+                for (int j = 0; j < 4; j++)
+                {
+                    returnedByte[i, (i + j) % 4] = temp[i, j];
+                }
+            }
+            return returnedByte;
+        }
         private List<Byte[]> ExpandKey(Byte[] key)
         {
 
@@ -77,7 +139,6 @@ namespace Gevand_Balayan____Cryptography____HW_4
             }
             return returnedList;
         }
-
         private Byte[] RotateWord(Byte[] input)
         {
             var temp = new Byte[input.Length];
@@ -163,6 +224,27 @@ namespace Gevand_Balayan____Cryptography____HW_4
                                    {0x80, 0x00, 0x00, 0x00},
                                    {0x1b, 0x00, 0x00, 0x00},
                                    {0x36, 0x00, 0x00, 0x00} };
+        }
+        private static IEnumerable<IEnumerable<T>> Split<T>(ICollection<T> self, int chunkSize)
+        {
+            var splitList = new List<List<T>>();
+            var chunkCount = (int)Math.Ceiling((double)self.Count / (double)chunkSize);
+
+            for (int c = 0; c < chunkCount; c++)
+            {
+                var skip = c * chunkSize;
+                var take = skip + chunkSize;
+                var chunk = new List<T>(chunkSize);
+
+                for (int e = skip; e < take && e < self.Count; e++)
+                {
+                    chunk.Add(self.ElementAt(e));
+                }
+
+                splitList.Add(chunk);
+            }
+
+            return splitList;
         }
     }
 }
