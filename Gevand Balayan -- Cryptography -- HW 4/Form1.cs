@@ -22,6 +22,7 @@ namespace Gevand_Balayan____Cryptography____HW_4
             InitializeComponent();
             GenerateSBox();
             GenerateRandomKey();
+            key = Encoding.ASCII.GetBytes("nq596kECzmth2qIT"); 
             txtKey.Text = System.Text.Encoding.UTF8.GetString(key);
         }
 
@@ -33,7 +34,51 @@ namespace Gevand_Balayan____Cryptography____HW_4
                 MessageBox.Show("Please enter an input in the text box");
                 return;
             }
-            lblOutput.Text = GenerateCypher(txtInput.Text);
+            if (radEnc.Checked)
+                lblOutput.Text = GenerateCypher(txtInput.Text);
+            else
+                lblOutput.Text = DecryptCypher(txtInput.Text);
+        }
+        private string DecryptCypher(string input)
+        {
+            string returnString = "";
+            //convert input to bytes
+            Byte[] inputAsBytes = Encoding.ASCII.GetBytes(input);
+            //split it into size 16 arrays
+            var chunks = Split<Byte>(inputAsBytes, 16);
+            foreach (var chunk in chunks)
+            {
+                Byte[] temp = chunk.ToArray();
+                //add 0s to the end of the array if its not 16
+                while (temp.Length != 16)
+                {
+                    var list = temp.ToList();
+                    list.Add(0);
+                    temp = list.ToArray();
+                }
+                for (int step = 10; step >= 0; step--)
+                {
+                    Byte[] currentKey = ExpandedKeys[step];
+                    for (int i = 0; i < temp.Length; i++)
+                    {
+                        //XOR with the chunk of data with the current key
+                        temp[i] = (byte)((int)temp[i] ^ (int)currentKey[i]);
+                    }
+                    //Sub with the inverse S-Box
+                    temp = SubWordInv(temp);
+                    Byte[,] matrix = InvShiftRow(temp);
+                    //flatten the matrix and save it as an array
+                    for (int i = 0; i < 4; i++)
+                    {
+                        for (int j = 0; j < 4; j++)
+                        {
+                            temp[i * 4 + j] = matrix[i, j];
+                        }
+                    }
+                }
+                returnString += System.Text.Encoding.UTF8.GetString(temp);
+            }
+            return returnString;
         }
         private string GenerateCypher(string input)
         {
@@ -63,11 +108,79 @@ namespace Gevand_Balayan____Cryptography____HW_4
                     //Sub with the S-Box
                     temp = SubWord(temp);
                     Byte[,] matrix = ShiftRow(temp);
-
-
+                    matrix = MixedColumns(matrix);
+                    //flatten the matrix and save it as an array
+                    for (int i = 0; i < 4; i++)
+                    {
+                        for (int j = 0; j < 4; j++)
+                        {
+                            temp[i * 4 + j] = matrix[i, j];
+                        }
+                    }
                 }
+                returnString += System.Text.Encoding.UTF8.GetString(temp);
             }
             return returnString;
+        }
+        private Byte[,] MixedColumns(Byte[,] input)
+        {
+            Byte[,] returnedByte = (Byte[,])input.Clone();
+
+            for (int c = 0; c < 4; ++c)
+            {
+                returnedByte[0, c] = (byte)((int)gfmultby02(input[0, c]) ^ (int)gfmultby03(input[1, c]) ^
+                                           (int)gfmultby01(input[2, c]) ^ (int)gfmultby01(input[3, c]));
+                returnedByte[1, c] = (byte)((int)gfmultby01(input[0, c]) ^ (int)gfmultby02(input[1, c]) ^
+                                           (int)gfmultby03(input[2, c]) ^ (int)gfmultby01(input[3, c]));
+                returnedByte[2, c] = (byte)((int)gfmultby01(input[0, c]) ^ (int)gfmultby01(input[1, c]) ^
+                                           (int)gfmultby02(input[2, c]) ^ (int)gfmultby03(input[3, c]));
+                returnedByte[3, c] = (byte)((int)gfmultby03(input[0, c]) ^ (int)gfmultby01(input[1, c]) ^
+                                           (int)gfmultby01(input[2, c]) ^ (int)gfmultby02(input[3, c]));
+            }
+            return returnedByte;
+        }
+        private Byte[,] InvMixedColumns(Byte[,] input)
+        {
+            Byte[,] returnedByte = (Byte[,])input.Clone();
+
+            for (int c = 0; c < 4; ++c)
+            {
+                returnedByte[0, c] = (byte)((int)gfmultby0e(input[0, c]) ^ (int)gfmultby0b(input[1, c]) ^
+                                   (int)gfmultby0d(input[2, c]) ^ (int)gfmultby09(input[3, c]));
+                returnedByte[1, c] = (byte)((int)gfmultby09(input[0, c]) ^ (int)gfmultby0e(input[1, c]) ^
+                                           (int)gfmultby0b(input[2, c]) ^ (int)gfmultby0d(input[3, c]));
+                returnedByte[2, c] = (byte)((int)gfmultby0d(input[0, c]) ^ (int)gfmultby09(input[1, c]) ^
+                                           (int)gfmultby0e(input[2, c]) ^ (int)gfmultby0b(input[3, c]));
+                returnedByte[3, c] = (byte)((int)gfmultby0b(input[0, c]) ^ (int)gfmultby0d(input[1, c]) ^
+                                           (int)gfmultby09(input[2, c]) ^ (int)gfmultby0e(input[3, c]));
+            }
+            return returnedByte;
+        }
+        
+        private Byte[,] InvShiftRow(Byte[] input)
+        {
+            Byte[,] returnedByte = new Byte[4, 4];
+            Byte[,] temp = new Byte[4, 4];
+            //turn flat array into 2d one
+            for (int i = 0; i < 4; i++)
+            {
+                for (int j = 0; j < 4; j++)
+                {
+                    temp[i, j] = input[i * 4 + j];
+                }
+            }
+            //copy the first row. it stays as is
+            for (int i = 0; i < 4; i++)
+                returnedByte[0, i] = input[i];
+            //rotate each other row to the right
+            for (int i = 1; i < 4; i++)
+            {
+                for (int j = 0; j < 4; j++)
+                {
+                    returnedByte[i, (i + j) % 4] = temp[i, j];
+                }
+            }
+            return returnedByte;
         }
         private Byte[,] ShiftRow(Byte[] input)
         {
@@ -84,12 +197,12 @@ namespace Gevand_Balayan____Cryptography____HW_4
             //copy the first row. it stays as is
             for (int i = 0; i < 4; i++)
                 returnedByte[0, i] = input[i];
-            //rotate each word to the left
+            //rotate each other row to the left
             for (int i = 1; i < 4; i++)
             {
                 for (int j = 0; j < 4; j++)
                 {
-                    returnedByte[i, (i + j) % 4] = temp[i, j];
+                    returnedByte[i, j] = temp[i, (i + j) % 4];
                 }
             }
             return returnedByte;
@@ -161,6 +274,19 @@ namespace Gevand_Balayan____Cryptography____HW_4
                 //get the left nibble with a mask
                 int row = (byte)((input[i] & 0xF0) >> 4);
                 temp[i] = this.SBox[row, col];
+            }
+            return temp;
+        }
+        private Byte[] SubWordInv(Byte[] input)
+        {
+            var temp = new Byte[input.Length];
+            for (int i = 0; i < input.Length; i++)
+            {
+                //get the right nibble with a mask
+                int col = (byte)input[i] & 0x0F;
+                //get the left nibble with a mask
+                int row = (byte)((input[i] & 0xF0) >> 4);
+                temp[i] = this.ISBox[row, col];
             }
             return temp;
         }
@@ -245,6 +371,50 @@ namespace Gevand_Balayan____Cryptography____HW_4
             }
 
             return splitList;
+        }
+
+        private static byte gfmultby01(byte b)
+        {
+            return b;
+        }
+
+        private static byte gfmultby02(byte b)
+        {
+            if (b < 0x80)
+                return (byte)(int)(b << 1);
+            else
+                return (byte)((int)(b << 1) ^ (int)(0x1b));
+        }
+
+        private static byte gfmultby03(byte b)
+        {
+            return (byte)((int)gfmultby02(b) ^ (int)b);
+        }
+        private static byte gfmultby09(byte b)
+        {
+            return (byte)((int)gfmultby02(gfmultby02(gfmultby02(b))) ^
+                           (int)b);
+        }
+
+        private static byte gfmultby0b(byte b)
+        {
+            return (byte)((int)gfmultby02(gfmultby02(gfmultby02(b))) ^
+                           (int)gfmultby02(b) ^
+                           (int)b);
+        }
+
+        private static byte gfmultby0d(byte b)
+        {
+            return (byte)((int)gfmultby02(gfmultby02(gfmultby02(b))) ^
+                           (int)gfmultby02(gfmultby02(b)) ^
+                           (int)(b));
+        }
+
+        private static byte gfmultby0e(byte b)
+        {
+            return (byte)((int)gfmultby02(gfmultby02(gfmultby02(b))) ^
+                           (int)gfmultby02(gfmultby02(b)) ^
+                           (int)gfmultby02(b));
         }
     }
 }

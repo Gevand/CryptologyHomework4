@@ -30,8 +30,8 @@
         {
             this.btnStart = new System.Windows.Forms.Button();
             this.txtInput = new System.Windows.Forms.TextBox();
-            this.radioButton1 = new System.Windows.Forms.RadioButton();
-            this.radioButton2 = new System.Windows.Forms.RadioButton();
+            this.radEnc = new System.Windows.Forms.RadioButton();
+            this.radDec = new System.Windows.Forms.RadioButton();
             this.lblOutput = new System.Windows.Forms.Label();
             this.txtKey = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
@@ -56,27 +56,27 @@
             this.txtInput.TabIndex = 1;
             this.txtInput.Text = "Hello my name is Gevand. I woud like to send you a secret message!";
             // 
-            // radioButton1
+            // radEnc
             // 
-            this.radioButton1.AutoSize = true;
-            this.radioButton1.Checked = true;
-            this.radioButton1.Location = new System.Drawing.Point(12, 59);
-            this.radioButton1.Name = "radioButton1";
-            this.radioButton1.Size = new System.Drawing.Size(61, 17);
-            this.radioButton1.TabIndex = 2;
-            this.radioButton1.TabStop = true;
-            this.radioButton1.Text = "Encrypt";
-            this.radioButton1.UseVisualStyleBackColor = true;
+            this.radEnc.AutoSize = true;
+            this.radEnc.Checked = true;
+            this.radEnc.Location = new System.Drawing.Point(12, 59);
+            this.radEnc.Name = "radEnc";
+            this.radEnc.Size = new System.Drawing.Size(61, 17);
+            this.radEnc.TabIndex = 2;
+            this.radEnc.TabStop = true;
+            this.radEnc.Text = "Encrypt";
+            this.radEnc.UseVisualStyleBackColor = true;
             // 
-            // radioButton2
+            // radDec
             // 
-            this.radioButton2.AutoSize = true;
-            this.radioButton2.Location = new System.Drawing.Point(12, 82);
-            this.radioButton2.Name = "radioButton2";
-            this.radioButton2.Size = new System.Drawing.Size(62, 17);
-            this.radioButton2.TabIndex = 3;
-            this.radioButton2.Text = "Decrypt";
-            this.radioButton2.UseVisualStyleBackColor = true;
+            this.radDec.AutoSize = true;
+            this.radDec.Location = new System.Drawing.Point(12, 82);
+            this.radDec.Name = "radDec";
+            this.radDec.Size = new System.Drawing.Size(62, 17);
+            this.radDec.TabIndex = 3;
+            this.radDec.Text = "Decrypt";
+            this.radDec.UseVisualStyleBackColor = true;
             // 
             // lblOutput
             // 
@@ -112,8 +112,8 @@
             this.Controls.Add(this.label2);
             this.Controls.Add(this.txtKey);
             this.Controls.Add(this.lblOutput);
-            this.Controls.Add(this.radioButton2);
-            this.Controls.Add(this.radioButton1);
+            this.Controls.Add(this.radDec);
+            this.Controls.Add(this.radEnc);
             this.Controls.Add(this.txtInput);
             this.Controls.Add(this.btnStart);
             this.Name = "Form1";
@@ -127,8 +127,8 @@
 
         private System.Windows.Forms.Button btnStart;
         private System.Windows.Forms.TextBox txtInput;
-        private System.Windows.Forms.RadioButton radioButton1;
-        private System.Windows.Forms.RadioButton radioButton2;
+        private System.Windows.Forms.RadioButton radEnc;
+        private System.Windows.Forms.RadioButton radDec;
         private System.Windows.Forms.Label lblOutput;
         private System.Windows.Forms.TextBox txtKey;
         private System.Windows.Forms.Label label2;
