@@ -10,6 +10,7 @@ using System.Windows.Forms;
 
 namespace Gevand_Balayan____Cryptography____HW_4
 {
+
     public partial class Form1 : Form
     {
         Byte[] key = new Byte[16];
@@ -20,14 +21,15 @@ namespace Gevand_Balayan____Cryptography____HW_4
         public Form1()
         {
             InitializeComponent();
-            GenerateSBox();
-            GenerateRandomKey();
-            key = Encoding.ASCII.GetBytes("nq596kECzmth2qIT"); 
-            txtKey.Text = System.Text.Encoding.UTF8.GetString(key);
+
         }
 
         private void btnStart_Click(object sender, EventArgs e)
         {
+            GenerateSBox();
+            //GenerateRandomKey();
+            key = Encoding.ASCII.GetBytes("nq596kECzmth2qIT");
+            txtKey.Text = System.Text.Encoding.UTF8.GetString(key);
             ExpandedKeys = ExpandKey(key);
             if (txtInput.Text.Length == 0)
             {
@@ -35,50 +37,73 @@ namespace Gevand_Balayan____Cryptography____HW_4
                 return;
             }
             if (radEnc.Checked)
-                lblOutput.Text = GenerateCypher(txtInput.Text);
+            {
+                txtOutput.Text = GenerateCypher(txtInput.Text);
+            }
             else
-                lblOutput.Text = DecryptCypher(txtInput.Text);
+                txtOutput.Text = DecryptCypher(txtInput.Text);
         }
         private string DecryptCypher(string input)
         {
-            string returnString = "";
-            //convert input to bytes
-            Byte[] inputAsBytes = Encoding.ASCII.GetBytes(input);
-            //split it into size 16 arrays
-            var chunks = Split<Byte>(inputAsBytes, 16);
-            foreach (var chunk in chunks)
+            try
             {
-                Byte[] temp = chunk.ToArray();
-                //add 0s to the end of the array if its not 16
-                while (temp.Length != 16)
+                string returnString = "";
+                //convert input to bytes
+                Byte[] inputAsBytes = Array.ConvertAll(input.Split(','), Byte.Parse);
+                //split it into size 16 arrays
+                var chunks = Split<Byte>(inputAsBytes, 16);
+                foreach (var chunk in chunks)
                 {
-                    var list = temp.ToList();
-                    list.Add(0);
-                    temp = list.ToArray();
-                }
-                for (int step = 10; step >= 0; step--)
-                {
-                    Byte[] currentKey = ExpandedKeys[step];
+                    Byte[] temp = chunk.ToArray();
+                    //add 0s to the end of the array if its not 16
+                    while (temp.Length != 16)
+                    {
+                        var list = temp.ToList();
+                        list.Add(0);
+                        temp = list.ToArray();
+                    }
+                    Byte[] currentKey = (Byte[])ExpandedKeys[ExpandedKeys.Count - 1].Clone();
                     for (int i = 0; i < temp.Length; i++)
                     {
                         //XOR with the chunk of data with the current key
                         temp[i] = (byte)((int)temp[i] ^ (int)currentKey[i]);
                     }
-                    //Sub with the inverse S-Box
-                    temp = SubWordInv(temp);
-                    Byte[,] matrix = InvShiftRow(temp);
-                    //flatten the matrix and save it as an array
-                    for (int i = 0; i < 4; i++)
+
+                    for (int step = 10; step > 0; step--)
                     {
-                        for (int j = 0; j < 4; j++)
+                        //Sub with the inverse S-Box
+                        if (step <= 10)
                         {
-                            temp[i * 4 + j] = matrix[i, j];
+                            temp = SubWordInv(temp);
+                            Byte[,] matrix = InvShiftRow(temp);
+                            currentKey = (Byte[])ExpandedKeys[step - 1].Clone();
+                            for (int i = 0; i < temp.Length; i++)
+                            {
+                                //XOR with the chunk of data with the current key
+                                matrix[i / 4, i % 4] = (byte)((int)matrix[i / 4, i % 4] ^ (int)currentKey[i]);
+                            }
+                            if (step != 1)
+                                matrix = InvMixedColumns(matrix);
+                            //flatten the matrix and save it as an array
+                            for (int i = 0; i < 4; i++)
+                            {
+                                for (int j = 0; j < 4; j++)
+                                {
+                                    temp[i * 4 + j] = matrix[i, j];
+                                }
+                            }
                         }
                     }
+
+                    returnString += System.Text.Encoding.ASCII.GetString(temp);
                 }
-                returnString += System.Text.Encoding.UTF8.GetString(temp);
+
+                return returnString;
             }
-            return returnString;
+            catch (Exception ex)
+            {
+                return "COULDN'T DECRYPT, THERE WAS AN ERROR";
+            }
         }
         private string GenerateCypher(string input)
         {
@@ -99,26 +124,33 @@ namespace Gevand_Balayan____Cryptography____HW_4
                 }
                 for (int step = 0; step <= 10; step++)
                 {
-                    Byte[] currentKey = ExpandedKeys[step];
+                    Byte[] currentKey = (Byte[])ExpandedKeys[step].Clone();
                     for (int i = 0; i < temp.Length; i++)
                     {
                         //XOR with the chunk of data with the current key
                         temp[i] = (byte)((int)temp[i] ^ (int)currentKey[i]);
                     }
                     //Sub with the S-Box
-                    temp = SubWord(temp);
-                    Byte[,] matrix = ShiftRow(temp);
-                    matrix = MixedColumns(matrix);
-                    //flatten the matrix and save it as an array
-                    for (int i = 0; i < 4; i++)
+                    if (step < 10)
                     {
-                        for (int j = 0; j < 4; j++)
+                        temp = SubWord(temp);
+                        Byte[,] matrix = ShiftRow(temp);
+                        if (step != 9)
+                            matrix = MixedColumns(matrix);
+                        //flatten the matrix and save it as an array
+                        for (int i = 0; i < 4; i++)
                         {
-                            temp[i * 4 + j] = matrix[i, j];
+                            for (int j = 0; j < 4; j++)
+                            {
+                                temp[i * 4 + j] = matrix[i, j];
+                            }
                         }
                     }
                 }
-                returnString += System.Text.Encoding.UTF8.GetString(temp);
+                if (returnString.Length == 0)
+                    returnString += string.Join(",", temp);
+                else
+                    returnString += "," + string.Join(",", temp);
             }
             return returnString;
         }
@@ -128,14 +160,14 @@ namespace Gevand_Balayan____Cryptography____HW_4
 
             for (int c = 0; c < 4; ++c)
             {
-                returnedByte[0, c] = (byte)((int)gfmultby02(input[0, c]) ^ (int)gfmultby03(input[1, c]) ^
-                                           (int)gfmultby01(input[2, c]) ^ (int)gfmultby01(input[3, c]));
-                returnedByte[1, c] = (byte)((int)gfmultby01(input[0, c]) ^ (int)gfmultby02(input[1, c]) ^
-                                           (int)gfmultby03(input[2, c]) ^ (int)gfmultby01(input[3, c]));
-                returnedByte[2, c] = (byte)((int)gfmultby01(input[0, c]) ^ (int)gfmultby01(input[1, c]) ^
-                                           (int)gfmultby02(input[2, c]) ^ (int)gfmultby03(input[3, c]));
-                returnedByte[3, c] = (byte)((int)gfmultby03(input[0, c]) ^ (int)gfmultby01(input[1, c]) ^
-                                           (int)gfmultby01(input[2, c]) ^ (int)gfmultby02(input[3, c]));
+                returnedByte[0, c] = (byte)((int)gfAESmultiplication02(input[0, c]) ^ (int)gfAESmultiplication03(input[1, c]) ^
+                                           (int)gfAESmultiplication01(input[2, c]) ^ (int)gfAESmultiplication01(input[3, c]));
+                returnedByte[1, c] = (byte)((int)gfAESmultiplication01(input[0, c]) ^ (int)gfAESmultiplication02(input[1, c]) ^
+                                           (int)gfAESmultiplication03(input[2, c]) ^ (int)gfAESmultiplication01(input[3, c]));
+                returnedByte[2, c] = (byte)((int)gfAESmultiplication01(input[0, c]) ^ (int)gfAESmultiplication01(input[1, c]) ^
+                                           (int)gfAESmultiplication02(input[2, c]) ^ (int)gfAESmultiplication03(input[3, c]));
+                returnedByte[3, c] = (byte)((int)gfAESmultiplication03(input[0, c]) ^ (int)gfAESmultiplication01(input[1, c]) ^
+                                           (int)gfAESmultiplication01(input[2, c]) ^ (int)gfAESmultiplication02(input[3, c]));
             }
             return returnedByte;
         }
@@ -145,18 +177,17 @@ namespace Gevand_Balayan____Cryptography____HW_4
 
             for (int c = 0; c < 4; ++c)
             {
-                returnedByte[0, c] = (byte)((int)gfmultby0e(input[0, c]) ^ (int)gfmultby0b(input[1, c]) ^
-                                   (int)gfmultby0d(input[2, c]) ^ (int)gfmultby09(input[3, c]));
-                returnedByte[1, c] = (byte)((int)gfmultby09(input[0, c]) ^ (int)gfmultby0e(input[1, c]) ^
-                                           (int)gfmultby0b(input[2, c]) ^ (int)gfmultby0d(input[3, c]));
-                returnedByte[2, c] = (byte)((int)gfmultby0d(input[0, c]) ^ (int)gfmultby09(input[1, c]) ^
-                                           (int)gfmultby0e(input[2, c]) ^ (int)gfmultby0b(input[3, c]));
-                returnedByte[3, c] = (byte)((int)gfmultby0b(input[0, c]) ^ (int)gfmultby0d(input[1, c]) ^
-                                           (int)gfmultby09(input[2, c]) ^ (int)gfmultby0e(input[3, c]));
+                returnedByte[0, c] = (byte)((int)gfAESmultiplication0e(input[0, c]) ^ (int)gfAESmultiplication0b(input[1, c]) ^
+                                   (int)gfAESmultiplication0d(input[2, c]) ^ (int)gfAESmultiplication09(input[3, c]));
+                returnedByte[1, c] = (byte)((int)gfAESmultiplication09(input[0, c]) ^ (int)gfAESmultiplication0e(input[1, c]) ^
+                                           (int)gfAESmultiplication0b(input[2, c]) ^ (int)gfAESmultiplication0d(input[3, c]));
+                returnedByte[2, c] = (byte)((int)gfAESmultiplication0d(input[0, c]) ^ (int)gfAESmultiplication09(input[1, c]) ^
+                                           (int)gfAESmultiplication0e(input[2, c]) ^ (int)gfAESmultiplication0b(input[3, c]));
+                returnedByte[3, c] = (byte)((int)gfAESmultiplication0b(input[0, c]) ^ (int)gfAESmultiplication0d(input[1, c]) ^
+                                           (int)gfAESmultiplication09(input[2, c]) ^ (int)gfAESmultiplication0e(input[3, c]));
             }
             return returnedByte;
         }
-        
         private Byte[,] InvShiftRow(Byte[] input)
         {
             Byte[,] returnedByte = new Byte[4, 4];
@@ -224,8 +255,7 @@ namespace Gevand_Balayan____Cryptography____HW_4
                     tempWord[0] = (byte)((int)tempWord[0] ^ (int)RCon[i / 4, 0]);
                     for (int z = 0; z < 4; z++)
                     {
-                        tempWord[z] = (byte)((int)tempWord[z] ^ (int)lastWord[z]);
-                        tempKey[z] = tempWord[z];
+                        tempKey[z] = (byte)((int)tempWord[z] ^ (int)lastWord[z]);
                     }
                     returnedList.Add(tempKey);
                 }
@@ -372,49 +402,46 @@ namespace Gevand_Balayan____Cryptography____HW_4
 
             return splitList;
         }
-
-        private static byte gfmultby01(byte b)
+        //Found these on the internet that help with GF field math, had to modify them from C to C sharp.
+        #region GF(2^8) MATH
+        private static byte gfAESmultiplication01(byte b)
         {
             return b;
         }
-
-        private static byte gfmultby02(byte b)
+        private static byte gfAESmultiplication02(byte b)
         {
             if (b < 0x80)
                 return (byte)(int)(b << 1);
             else
                 return (byte)((int)(b << 1) ^ (int)(0x1b));
         }
-
-        private static byte gfmultby03(byte b)
+        private static byte gfAESmultiplication03(byte b)
         {
-            return (byte)((int)gfmultby02(b) ^ (int)b);
+            return (byte)((int)gfAESmultiplication02(b) ^ (int)b);
         }
-        private static byte gfmultby09(byte b)
+        private static byte gfAESmultiplication09(byte b)
         {
-            return (byte)((int)gfmultby02(gfmultby02(gfmultby02(b))) ^
+            return (byte)((int)gfAESmultiplication02(gfAESmultiplication02(gfAESmultiplication02(b))) ^
                            (int)b);
         }
-
-        private static byte gfmultby0b(byte b)
+        private static byte gfAESmultiplication0b(byte b)
         {
-            return (byte)((int)gfmultby02(gfmultby02(gfmultby02(b))) ^
-                           (int)gfmultby02(b) ^
+            return (byte)((int)gfAESmultiplication02(gfAESmultiplication02(gfAESmultiplication02(b))) ^
+                           (int)gfAESmultiplication02(b) ^
                            (int)b);
         }
-
-        private static byte gfmultby0d(byte b)
+        private static byte gfAESmultiplication0d(byte b)
         {
-            return (byte)((int)gfmultby02(gfmultby02(gfmultby02(b))) ^
-                           (int)gfmultby02(gfmultby02(b)) ^
+            return (byte)((int)gfAESmultiplication02(gfAESmultiplication02(gfAESmultiplication02(b))) ^
+                           (int)gfAESmultiplication02(gfAESmultiplication02(b)) ^
                            (int)(b));
         }
-
-        private static byte gfmultby0e(byte b)
+        private static byte gfAESmultiplication0e(byte b)
         {
-            return (byte)((int)gfmultby02(gfmultby02(gfmultby02(b))) ^
-                           (int)gfmultby02(gfmultby02(b)) ^
-                           (int)gfmultby02(b));
+            return (byte)((int)gfAESmultiplication02(gfAESmultiplication02(gfAESmultiplication02(b))) ^
+                           (int)gfAESmultiplication02(gfAESmultiplication02(b)) ^
+                           (int)gfAESmultiplication02(b));
         }
+        #endregion
     }
 }

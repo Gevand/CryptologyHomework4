@@ -32,9 +32,9 @@
             this.txtInput = new System.Windows.Forms.TextBox();
             this.radEnc = new System.Windows.Forms.RadioButton();
             this.radDec = new System.Windows.Forms.RadioButton();
-            this.lblOutput = new System.Windows.Forms.Label();
             this.txtKey = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
+            this.txtOutput = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // btnStart
@@ -78,15 +78,6 @@
             this.radDec.Text = "Decrypt";
             this.radDec.UseVisualStyleBackColor = true;
             // 
-            // lblOutput
-            // 
-            this.lblOutput.AutoSize = true;
-            this.lblOutput.Location = new System.Drawing.Point(184, 367);
-            this.lblOutput.Name = "lblOutput";
-            this.lblOutput.Size = new System.Drawing.Size(66, 13);
-            this.lblOutput.TabIndex = 4;
-            this.lblOutput.Text = "Output here:";
-            // 
             // txtKey
             // 
             this.txtKey.Enabled = false;
@@ -104,14 +95,23 @@
             this.label2.TabIndex = 6;
             this.label2.Text = "16 Byte Key";
             // 
+            // txtOutput
+            // 
+            this.txtOutput.Location = new System.Drawing.Point(187, 375);
+            this.txtOutput.Multiline = true;
+            this.txtOutput.Name = "txtOutput";
+            this.txtOutput.Size = new System.Drawing.Size(1251, 244);
+            this.txtOutput.TabIndex = 7;
+            this.txtOutput.Text = "Cypher output here, copy it to decypt it.";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1450, 631);
+            this.Controls.Add(this.txtOutput);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.txtKey);
-            this.Controls.Add(this.lblOutput);
             this.Controls.Add(this.radDec);
             this.Controls.Add(this.radEnc);
             this.Controls.Add(this.txtInput);
@@ -129,9 +129,9 @@
         private System.Windows.Forms.TextBox txtInput;
         private System.Windows.Forms.RadioButton radEnc;
         private System.Windows.Forms.RadioButton radDec;
-        private System.Windows.Forms.Label lblOutput;
         private System.Windows.Forms.TextBox txtKey;
         private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.TextBox txtOutput;
     }
 }
 
