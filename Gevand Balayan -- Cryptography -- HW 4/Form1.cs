@@ -13,6 +13,7 @@ namespace Gevand_Balayan____Cryptography____HW_4
 
     public partial class Form1 : Form
     {
+        Encoding enc = Encoding.GetEncoding("ISO-8859-1");
         Byte[] key = new Byte[16];
         List<Byte[]> ExpandedKeys;
         Byte[,] SBox = new Byte[16, 16];
@@ -49,7 +50,7 @@ namespace Gevand_Balayan____Cryptography____HW_4
             {
                 string returnString = "";
                 //convert input to bytes
-                Byte[] inputAsBytes = Array.ConvertAll(input.Split(','), Byte.Parse);
+                Byte[] inputAsBytes = enc.GetBytes(input);
                 //split it into size 16 arrays
                 var chunks = Split<Byte>(inputAsBytes, 16);
                 foreach (var chunk in chunks)
@@ -147,10 +148,7 @@ namespace Gevand_Balayan____Cryptography____HW_4
                         }
                     }
                 }
-                if (returnString.Length == 0)
-                    returnString += string.Join(",", temp);
-                else
-                    returnString += "," + string.Join(",", temp);
+                returnString += enc.GetString(temp);
             }
             return returnString;
         }
